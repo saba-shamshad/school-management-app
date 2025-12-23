@@ -57,7 +57,7 @@ export default function AddSchool() {
 
       const result = await response.json();
 
-      if (response.status === 200) {
+     if (response.status === 201) {
         setSuccessMessage("School added successfully!");
         reset();
         setPreviewImage(null);

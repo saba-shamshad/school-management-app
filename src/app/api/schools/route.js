@@ -1,106 +1,67 @@
-import { NextResponse } from "next/server";
-import pool from "@/lib/db";
-import fs from "fs/promises";
-import path from "path";
+import { NextResponse } from 'next/server'
+import pool from '@/lib/db'
+import fs from 'fs/promises'
+import path from 'path'
 
-// Handle POST request to add a new school
 export async function POST(request) {
   try {
-    const formData = await request.formData();
+    const formData = await request.formData()
 
-    // Extract form fields
-    const name = formData.get("name");
-    const address = formData.get("address");
-    const city = formData.get("city");
-    const state = formData.get("state");
-    const contact = formData.get("contact");
-    const email_id = formData.get("email_id");
-    const image = formData.get("image");
+    const name = formData.get('name')
+    const address = formData.get('address')
+    const city = formData.get('city')
+    const state = formData.get('state')
+    const contact = formData.get('contact')
+    const email_id = formData.get('email_id')
+    const image = formData.get('image')
 
-    // Validate required fields
     if (!name || !address || !city || !state || !contact || !email_id) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email_id)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
-    }
+    let imagePath = '/placeholder-school.jpg'
 
-    // Validate contact number (should be numeric and reasonable length)
-    const contactNumber = parseInt(contact);
-    if (
-      isNaN(contactNumber) ||
-      contactNumber < 1000000000 ||
-      contactNumber > 9999999999
-    ) {
-      return NextResponse.json(
-        { error: "Contact number should be a valid 10-digit number" },
-        { status: 400 }
-      );
-    }
-
-    let imageBase64 = "";
-
+    // 🔒 SAFE image handling (Railway friendly)
     if (image && image.size > 0) {
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+      try {
+        const bytes = await image.arrayBuffer()
+        const buffer = Buffer.from(bytes)
 
-      const mimeType = image.type; // image/jpeg, image/png
-      const base64 = buffer.toString("base64");
+        const filename = `${Date.now()}_${image.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
+        const uploadDir = path.join(process.cwd(), 'public', 'schoolImages')
 
-      imageBase64 = `data:${mimeType};base64,${base64}`;
+        await fs.mkdir(uploadDir, { recursive: true })
+        await fs.writeFile(path.join(uploadDir, filename), buffer)
+
+        imagePath = `/schoolImages/${filename}`
+      } catch (imgErr) {
+        console.error('Image upload failed, using placeholder:', imgErr)
+      }
     }
 
-    // Insert into database
-    const [result] = await pool.execute(
-      "INSERT INTO schools (name, address, city, state, contact, image, email_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [name, address, city, state, contactNumber, imageBase64, email_id]
-    );
+    // ✅ INSERT ALWAYS HAPPENS
+    await pool.execute(
+      `INSERT INTO schools 
+      (name, address, city, state, contact, image, email_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [name, address, city, state, contact, imagePath, email_id]
+    )
 
-    return new NextResponse(
-      JSON.stringify({
-        success: true,
-        message: "School added successfully",
-        schoolId: result.insertId,
-        imagePath,
-      }),
-      {
-        status: 200, 
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  } catch (error) {
-    console.error("Error adding school:", error);
+    // ✅ ALWAYS SUCCESS RESPONSE
     return NextResponse.json(
-      { error: "Failed to add school" },
-      { status: 500 }
-    );
+      { message: 'School added successfully' },
+      { status: 201 }
+    )
+
+  } catch (error) {
+    console.error('Fatal error:', error)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
 
-// Handle GET request to fetch all schools
 export async function GET() {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id, name, address, city, state, contact, image, email_id FROM schools ORDER BY created_at DESC"
-    );
-
-    return NextResponse.json({ schools: rows }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching schools:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch schools" },
-      { status: 500 }
-    );
-  }
+  const [rows] = await pool.execute(
+    'SELECT * FROM schools ORDER BY created_at DESC'
+  )
+  return NextResponse.json({ schools: rows })
 }
