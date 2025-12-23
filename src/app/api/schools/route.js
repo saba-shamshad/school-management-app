@@ -60,19 +60,24 @@ export async function POST(request) {
     }
 
     // Insert into database
-   const [result] = await pool.execute(
-  'INSERT INTO schools (name, address, city, state, contact, image, email_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-  [name, address, city, state, contactNumber, imageBase64, email_id]
-)
+    const [result] = await pool.execute(
+      "INSERT INTO schools (name, address, city, state, contact, image, email_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [name, address, city, state, contactNumber, imageBase64, email_id]
+    );
 
-
-    return NextResponse.json(
-      {
+    return new NextResponse(
+      JSON.stringify({
+        success: true,
         message: "School added successfully",
         schoolId: result.insertId,
-        imagePath: imagePath,
-      },
-      { status: 201 }
+        imagePath,
+      }),
+      {
+        status: 200, 
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   } catch (error) {
     console.error("Error adding school:", error);

@@ -1,93 +1,92 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 export default function AddSchool() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [previewImage, setPreviewImage] = useState(null)
-  
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    watch
-  } = useForm()
+    watch,
+  } = useForm();
 
-  const image = watch('image')
+  const image = watch("image");
 
   // Handle image preview
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewImage(reader.result)
-      }
-      reader.readAsDataURL(file)
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     } else {
-      setPreviewImage(null)
+      setPreviewImage(null);
     }
-  }
+  };
 
   const onSubmit = async (data) => {
-    setIsSubmitting(true)
-    setSuccessMessage('')
+    setIsSubmitting(true);
+    setSuccessMessage("");
 
     try {
-      const formData = new FormData()
-      
+      const formData = new FormData();
+
       // Append all form fields
-      Object.keys(data).forEach(key => {
-        if (key === 'image' && data[key] && data[key][0]) {
-          formData.append(key, data[key][0])
+      Object.keys(data).forEach((key) => {
+        if (key === "image" && data[key] && data[key][0]) {
+          formData.append(key, data[key][0]);
         } else {
-          formData.append(key, data[key])
+          formData.append(key, data[key]);
         }
-      })
+      });
 
-      const response = await fetch('/api/schools', {
-        method: 'POST',
-        body: formData
-      })
+      const response = await fetch("/api/schools", {
+        method: "POST",
+        body: formData,
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
-      if (response.ok) {
-        setSuccessMessage('School added successfully!')
-        reset()
-        setPreviewImage(null)
-        
-        // Redirect to show schools page after 2 seconds
+      if (response.status === 200) {
+        setSuccessMessage("School added successfully!");
+        reset();
+        setPreviewImage(null);
+
         setTimeout(() => {
-          router.push('/showSchools')
-        }, 2000)
+          router.push("/showSchools");
+        }, 1500);
       } else {
-        alert(result.error || 'Failed to add school')
+        alert(result?.error || "Failed to add school");
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
-      alert('An error occurred while submitting the form')
+      console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="container">
       <div className="form-container">
-        <h1 style={{ textAlign: 'center', marginBottom: '2rem', color: '#333' }}>
+        <h1
+          style={{ textAlign: "center", marginBottom: "2rem", color: "#333" }}
+        >
           Add New School
         </h1>
 
         {successMessage && (
-          <div className="success-message">
-            {successMessage}
-          </div>
+          <div className="success-message">{successMessage}</div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -97,12 +96,12 @@ export default function AddSchool() {
             <input
               type="text"
               id="name"
-              {...register('name', { 
-                required: 'School name is required',
+              {...register("name", {
+                required: "School name is required",
                 minLength: {
                   value: 3,
-                  message: 'School name must be at least 3 characters long'
-                }
+                  message: "School name must be at least 3 characters long",
+                },
               })}
               placeholder="Enter school name"
             />
@@ -116,12 +115,12 @@ export default function AddSchool() {
             <label htmlFor="address">Address *</label>
             <textarea
               id="address"
-              {...register('address', { 
-                required: 'Address is required',
+              {...register("address", {
+                required: "Address is required",
                 minLength: {
                   value: 10,
-                  message: 'Address must be at least 10 characters long'
-                }
+                  message: "Address must be at least 10 characters long",
+                },
               })}
               placeholder="Enter school address"
             />
@@ -136,12 +135,12 @@ export default function AddSchool() {
             <input
               type="text"
               id="city"
-              {...register('city', { 
-                required: 'City is required',
+              {...register("city", {
+                required: "City is required",
                 pattern: {
                   value: /^[A-Za-z\s]+$/,
-                  message: 'City name should contain only letters and spaces'
-                }
+                  message: "City name should contain only letters and spaces",
+                },
               })}
               placeholder="Enter city name"
             />
@@ -155,7 +154,7 @@ export default function AddSchool() {
             <label htmlFor="state">State *</label>
             <select
               id="state"
-              {...register('state', { required: 'State is required' })}
+              {...register("state", { required: "State is required" })}
             >
               <option value="">Select State</option>
               <option value="AL">Alabama</option>
@@ -220,12 +219,12 @@ export default function AddSchool() {
             <input
               type="tel"
               id="contact"
-              {...register('contact', { 
-                required: 'Contact number is required',
+              {...register("contact", {
+                required: "Contact number is required",
                 pattern: {
                   value: /^[0-9]{10}$/,
-                  message: 'Contact number must be exactly 10 digits'
-                }
+                  message: "Contact number must be exactly 10 digits",
+                },
               })}
               placeholder="Enter 10-digit contact number"
               maxLength="10"
@@ -241,12 +240,12 @@ export default function AddSchool() {
             <input
               type="email"
               id="email_id"
-              {...register('email_id', { 
-                required: 'Email ID is required',
+              {...register("email_id", {
+                required: "Email ID is required",
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: 'Please enter a valid email address'
-                }
+                  message: "Please enter a valid email address",
+                },
               })}
               placeholder="Enter email address"
             />
@@ -262,42 +261,42 @@ export default function AddSchool() {
               type="file"
               id="image"
               accept="image/*"
-              {...register('image', { 
-                required: 'School image is required'
+              {...register("image", {
+                required: "School image is required",
               })}
               onChange={handleImageChange}
             />
             {errors.image && (
               <span className="error-message">{errors.image.message}</span>
             )}
-            
+
             {/* Image Preview */}
             {previewImage && (
-              <div style={{ marginTop: '1rem' }}>
-                <img 
-                  src={previewImage} 
-                  alt="Preview" 
-                  style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '200px', 
-                    borderRadius: '5px',
-                    border: '1px solid #ddd'
-                  }} 
+              <div style={{ marginTop: "1rem" }}>
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "200px",
+                    borderRadius: "5px",
+                    border: "1px solid #ddd",
+                  }}
                 />
               </div>
             )}
           </div>
 
-          <button 
-            type="submit" 
-            className="submit-btn" 
+          <button
+            type="submit"
+            className="submit-btn"
             disabled={isSubmitting}
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           >
-            {isSubmitting ? 'Adding School...' : 'Add School'}
+            {isSubmitting ? "Adding School..." : "Add School"}
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }
