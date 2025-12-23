@@ -115,12 +115,16 @@ export default function ShowSchools() {
               {school.image ? (
                 <img
                   src={
-                    school.image && school.image.startsWith("/")
+                    school.image?.startsWith("/")
                       ? school.image
-                      : "/placeholder-school.jpg"
+                      : `/schoolImages/${school.image}`
                   }
                   alt={school.name}
                   className="school-image"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder-school.jpg";
+                  }}
                 />
               ) : (
                 <div

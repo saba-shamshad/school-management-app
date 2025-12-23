@@ -68,6 +68,7 @@ export async function POST(request) {
       const filepath = path.join(uploadDir, filename)
       await fs.writeFile(filepath, buffer)
       imagePath = `/schoolImages/${filename}`
+
     }
 
     // Insert into database
