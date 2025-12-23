@@ -114,11 +114,7 @@ export default function ShowSchools() {
 
               {school.image ? (
                 <img
-                  src={
-                    school.image?.startsWith("/")
-                      ? school.image
-                      : `/schoolImages/${school.image}`
-                  }
+                  src={school.image}
                   alt={school.name}
                   className="school-image"
                   loading="lazy"
