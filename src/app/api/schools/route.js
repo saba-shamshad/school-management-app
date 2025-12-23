@@ -3,12 +3,6 @@ import pool from '@/lib/db'
 import fs from 'fs/promises'
 import path from 'path'
 
-// Configure to not use body parser for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
 
 // Handle POST request to add a new school
 export async function POST(request) {
